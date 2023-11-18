@@ -1,5 +1,6 @@
 import os
 from torch.utils.data import Dataset
+import torch
 import torchvision.transforms.functional as F
 from torchvision.transforms import Compose, Resize, ToTensor
 from PIL import Image
@@ -22,7 +23,7 @@ class PansEggsDataset(Dataset):
         self.new_size = new_size
 
         # Set transform (convert to tensor and pad to max height and width)
-        self.transform = Compose([ToTensor(), SquarePad(), Resize(self.new_size)])
+        self.transform = Compose([ToTensor(), SquarePad(), Resize(self.new_size, antialias=True)])
         
         # Get max height and width (Informative only)
         self.get_max_size()
@@ -53,8 +54,13 @@ class PansEggsDataset(Dataset):
         if self.masks:
             mask_name = os.path.join(self.folder_path, 'masks', self.masks[idx])
             mask = Image.open(mask_name)
-            mask = self.transform(mask)
-            mask = mask / 255.0
+            mask = mask.convert('L')
+            mask = self.transform(mask) * 255.0
+            # Convert to 3 classes (0 -> background, 1 -> egg, 2 -> pan)
+            mask[mask <= 64] = 0
+            mask[torch.bitwise_and(mask > 64, mask <= 192)] = 1
+            mask[mask > 192] = 2
+            mask = mask[0,:,:].long() 
         else:
             mask = None
 
