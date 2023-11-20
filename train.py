@@ -92,8 +92,11 @@ def train():
         print('Validation loss: {:.4f}'.format(epoch_loss))
         writer.add_scalar('Loss/val', epoch_loss, epoch)
         
-        if epoch == 0: writer.add_images('Images', inputs[0], epoch)
-        writer.add_images('Outputs', outputs[0], epoch)
+        if epoch == 0: 
+            writer.add_image('Images', inputs[0]*255.0, epoch)
+            writer.add_image('Mask', torch.clamp(labels[0]*128, 0, 255).unsqueeze(0), epoch)
+        writer.add_image('Outputs', outputs[0], epoch)
+        writer.add_image('Outputs_bw', torch.clamp(outputs[0]*128, 0, 255), epoch)
 
         torch.save({
             'epoch': epoch,
