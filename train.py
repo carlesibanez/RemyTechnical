@@ -33,8 +33,19 @@ print(model)
 loss_fn = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
+starting_epoch = 0
+
+load_model = False #'models/unet_ep99.pth'
+if load_model:
+    checkpoint       = torch.load(load_model)
+    starting_epoch   = checkpoint['epoch'] + 1
+    model.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    print(f'Model loaded successfully. Starting at epoch: {starting_epoch}.')
+
+test_name = 'test1'
 # Create tensorboard writer
-writer = SummaryWriter(log_dir='runs/unet')
+writer = SummaryWriter(log_dir=f'runs/{test_name}')
 
 def train():
     epochs = 10
@@ -84,7 +95,11 @@ def train():
         if epoch == 0: writer.add_images('Images', inputs[0], epoch)
         writer.add_images('Outputs', outputs[0], epoch)
 
-        torch.save(model.state_dict(), f'checkpoints/unet_ep{epoch}.pth')
+        torch.save({
+            'epoch': epoch,
+            'state_dict': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+        }, f'checkpoints/{test_name}/unet_ep{epoch}.pth')
 
 if __name__ == '__main__':
     train() 
