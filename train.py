@@ -18,9 +18,12 @@ train_dataset, val_dataset = torch.utils.data.random_split(dataset, [0.8, 0.2], 
 print('Train size: ', len(train_dataset))
 print('Validation size: ', len(val_dataset))
 
+BATCH_SIZE = 4
+NUM_WORKERS = 0
+
 # Create dataloaders
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=0)
-val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=4, shuffle=False, num_workers=0)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
 # Create model
 model = UNet(in_channels=3, classes=3).to(device)
@@ -78,9 +81,10 @@ def train():
         print('Validation loss: {:.4f}'.format(epoch_loss))
         writer.add_scalar('Loss/val', epoch_loss, epoch)
         
-        if epoch == 0: writer.add_images('Images', inputs, epoch)
-        writer.add_images('Outputs', outputs, epoch)
+        if epoch == 0: writer.add_images('Images', inputs[0], epoch)
+        writer.add_images('Outputs', outputs[0], epoch)
 
-        torch.save(model.state_dict(), f'models/unet_ep{epoch}.pth')
+        torch.save(model.state_dict(), f'checkpoints/unet_ep{epoch}.pth')
 
-    
+if __name__ == '__main__':
+    train() 
