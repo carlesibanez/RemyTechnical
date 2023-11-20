@@ -162,3 +162,4 @@ cython_debug/
 # Custom
 /runs
 /checkpoints
+.test.ipynb
