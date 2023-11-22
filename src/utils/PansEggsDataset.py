@@ -8,7 +8,7 @@ import numpy as np
 
 
 class PansEggsDataset(Dataset):
-    def __init__(self, folder_path, masks=True, new_size=(1000, 1000)):
+    def __init__(self, folder_path, mode='train', masks=True, new_size=(1000, 1000)):
         """
         Args:
             folder_path (string): Path to the folder containing images and masks
@@ -17,7 +17,8 @@ class PansEggsDataset(Dataset):
         """
         self.folder_path = folder_path
         self.imgs = sorted(os.listdir(os.path.join(folder_path, 'images')))
-        if masks:
+        self.mode = mode
+        if mode == 'train':
             self.masks = sorted(os.listdir(os.path.join(folder_path, 'masks')))
             assert len(self.imgs) == len(self.masks), 'Number of images and masks must be equal'
         self.new_size = new_size
@@ -46,12 +47,13 @@ class PansEggsDataset(Dataset):
     def __getitem__(self, idx):
         # Retrive image
         img_name = os.path.join(self.folder_path, 'images', self.imgs[idx])
-        image = Image.open(img_name)        
+        image = Image.open(img_name)
+        original_size = image.size
         image = self.transform(image)
         image = image / 255.0
         
         # Retrive mask
-        if self.masks:
+        if self.mode == 'train':
             mask_name = os.path.join(self.folder_path, 'masks', self.masks[idx])
             mask = Image.open(mask_name)
             mask = mask.convert('L')
@@ -61,10 +63,11 @@ class PansEggsDataset(Dataset):
             mask[torch.bitwise_and(mask > 64, mask <= 192)] = 1
             mask[mask > 192] = 2
             mask = mask[0,:,:].long() 
-        else:
-            mask = None
+            return image, mask
+        elif self.mode == 'test':
+            return image, original_size, self.imgs[idx]
+        return image
 
-        return image, mask
 
 
 class SquarePad:
