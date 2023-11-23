@@ -16,12 +16,13 @@ print(f'Using image: {ecr_image}')
 data_location = "s3://image-segmentation-eggs-and-pans/train/"
 
 # Define role
-role = sage.get_execution_role()
+# role = sage.get_execution_role()
+role = 'AmazonSageMaker-ExecutionRole-20231120T115166'
 
 # Define hyperparmeters
-hyperparameters = {"epochs": 150, "batch-size": 4, "num-workers": 4}
+hyperparameters = {"epochs": 200, "batch-size": 4, "num-workers": 4}
 
-instance_type = "ml.g4dn.2xlarge"
+instance_type = "ml.g4dn.xlarge"
 
 boto_sess = boto3.session.Session(region_name=region)
 sess = sage.Session(boto_session=boto_sess, default_bucket="image-segmentation-eggs-and-pans")
